@@ -364,14 +364,10 @@ func (q *DBQuerier) CompositeUser(ctx context.Context) ([]CompositeUserRow, erro
 	}
 	defer rows.Close()
 	items := []CompositeUserRow{}
-	userRow := q.types.newUser()
 	for rows.Next() {
 		var item CompositeUserRow
 		if err := rows.Scan(&item.Mac, &item.Type, userRow); err != nil {
 			return nil, fmt.Errorf("scan CompositeUser row: %w", err)
-		}
-		if err := userRow.AssignTo(&item.User); err != nil {
-			return nil, fmt.Errorf("assign CompositeUser row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -394,14 +390,10 @@ func (q *DBQuerier) CompositeUserScan(results pgx.BatchResults) ([]CompositeUser
 	}
 	defer rows.Close()
 	items := []CompositeUserRow{}
-	userRow := q.types.newUser()
 	for rows.Next() {
 		var item CompositeUserRow
 		if err := rows.Scan(&item.Mac, &item.Type, userRow); err != nil {
 			return nil, fmt.Errorf("scan CompositeUserBatch row: %w", err)
-		}
-		if err := userRow.AssignTo(&item.User); err != nil {
-			return nil, fmt.Errorf("assign CompositeUser row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -418,12 +410,8 @@ func (q *DBQuerier) CompositeUserOne(ctx context.Context) (User, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "CompositeUserOne")
 	row := q.conn.QueryRow(ctx, compositeUserOneSQL)
 	var item User
-	userRow := q.types.newUser()
 	if err := row.Scan(userRow); err != nil {
 		return item, fmt.Errorf("query CompositeUserOne: %w", err)
-	}
-	if err := userRow.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign CompositeUserOne row: %w", err)
 	}
 	return item, nil
 }
@@ -437,12 +425,8 @@ func (q *DBQuerier) CompositeUserOneBatch(batch genericBatch) {
 func (q *DBQuerier) CompositeUserOneScan(results pgx.BatchResults) (User, error) {
 	row := results.QueryRow()
 	var item User
-	userRow := q.types.newUser()
 	if err := row.Scan(userRow); err != nil {
 		return item, fmt.Errorf("scan CompositeUserOneBatch row: %w", err)
-	}
-	if err := userRow.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign CompositeUserOne row: %w", err)
 	}
 	return item, nil
 }
@@ -459,12 +443,8 @@ func (q *DBQuerier) CompositeUserOneTwoCols(ctx context.Context) (CompositeUserO
 	ctx = context.WithValue(ctx, "pggen_query_name", "CompositeUserOneTwoCols")
 	row := q.conn.QueryRow(ctx, compositeUserOneTwoColsSQL)
 	var item CompositeUserOneTwoColsRow
-	userRow := q.types.newUser()
 	if err := row.Scan(&item.Num, userRow); err != nil {
 		return item, fmt.Errorf("query CompositeUserOneTwoCols: %w", err)
-	}
-	if err := userRow.AssignTo(&item.User); err != nil {
-		return item, fmt.Errorf("assign CompositeUserOneTwoCols row: %w", err)
 	}
 	return item, nil
 }
@@ -478,12 +458,8 @@ func (q *DBQuerier) CompositeUserOneTwoColsBatch(batch genericBatch) {
 func (q *DBQuerier) CompositeUserOneTwoColsScan(results pgx.BatchResults) (CompositeUserOneTwoColsRow, error) {
 	row := results.QueryRow()
 	var item CompositeUserOneTwoColsRow
-	userRow := q.types.newUser()
 	if err := row.Scan(&item.Num, userRow); err != nil {
 		return item, fmt.Errorf("scan CompositeUserOneTwoColsBatch row: %w", err)
-	}
-	if err := userRow.AssignTo(&item.User); err != nil {
-		return item, fmt.Errorf("assign CompositeUserOneTwoCols row: %w", err)
 	}
 	return item, nil
 }
@@ -499,14 +475,10 @@ func (q *DBQuerier) CompositeUserMany(ctx context.Context) ([]User, error) {
 	}
 	defer rows.Close()
 	items := []User{}
-	userRow := q.types.newUser()
 	for rows.Next() {
 		var item User
 		if err := rows.Scan(userRow); err != nil {
 			return nil, fmt.Errorf("scan CompositeUserMany row: %w", err)
-		}
-		if err := userRow.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign CompositeUserMany row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -529,14 +501,10 @@ func (q *DBQuerier) CompositeUserManyScan(results pgx.BatchResults) ([]User, err
 	}
 	defer rows.Close()
 	items := []User{}
-	userRow := q.types.newUser()
 	for rows.Next() {
 		var item User
 		if err := rows.Scan(userRow); err != nil {
 			return nil, fmt.Errorf("scan CompositeUserManyBatch row: %w", err)
-		}
-		if err := userRow.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign CompositeUserMany row: %w", err)
 		}
 		items = append(items, item)
 	}

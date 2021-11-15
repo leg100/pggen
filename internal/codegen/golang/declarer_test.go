@@ -2,6 +2,7 @@ package golang
 
 import (
 	"flag"
+	"github.com/google/go-cmp/cmp"
 	"github.com/jschaf/pggen/internal/casing"
 	"github.com/jschaf/pggen/internal/codegen/golang/gotype"
 	"github.com/jschaf/pggen/internal/pg"
@@ -23,10 +24,8 @@ func TestDeclarers(t *testing.T) {
 		ColumnNames: []string{"foo", "bar_baz"},
 		ColumnTypes: []pg.Type{pg.Int2, pg.Text},
 	}
-	goTypeSomeTable := gotype.CompositeType{
+	goTypeSomeTable := &gotype.CompositeType{
 		PgComposite: pgTypeSomeTable,
-		PkgPath:     "example.com/foo",
-		Pkg:         "foo",
 		Name:        "SomeTable",
 		FieldNames:  []string{"Foo", "BarBaz"},
 		FieldTypes:  []gotype.Type{gotype.Int16, gotype.PgText},
@@ -38,78 +37,77 @@ func TestDeclarers(t *testing.T) {
 	}{
 		{
 			name:    "composite",
+			pkgPath: "example.com/foo",
 			typ:     goTypeSomeTable,
-			pkgPath: "example.com/foo",
 		},
 		{
-			name: "composite_array",
-			typ: gotype.ArrayType{
-				PkgPath: "example.com/arr",
-				Pkg:     "bar",
-				Name:    "SomeArray",
-				PgArray: pg.ArrayType{Name: "_some_array", ElemType: pgTypeSomeTable},
-				Elem:    goTypeSomeTable,
+			name:    "composite_array",
+			pkgPath: "example.com/foo",
+			typ: &gotype.ArrayType{
+				PgArray: pg.ArrayType{Name: "_some_array", Elem: pgTypeSomeTable},
+				Elem:    &gotype.ImportType{PkgPath: "example.com/foo", Type: goTypeSomeTable},
 			},
-			pkgPath: "example.com/foo",
 		},
 		{
-			name: "composite_enum",
-			typ: gotype.CompositeType{
-				PgComposite: pg.CompositeType{
-					Name:        "some_table_enum",
-					ColumnNames: []string{"foo"},
-					ColumnTypes: []pg.Type{pg.EnumType{Name: "some_table_enum"}},
-				},
-				PkgPath:    "example.com/foo",
-				Pkg:        "foo",
-				Name:       "SomeTableEnum",
-				FieldNames: []string{"Foo"},
-				FieldTypes: []gotype.Type{
-					gotype.NewEnumType(
-						emptyPkgPath,
-						pg.EnumType{Name: "device_type", Labels: []string{"ios", "mobile"}},
-						caser,
-					),
-				},
-			},
+			name:    "composite_enum",
 			pkgPath: "example.com/foo",
+			typ: &gotype.ImportType{
+				PkgPath: "example.com/foo",
+				Type: &gotype.CompositeType{
+					PgComposite: pg.CompositeType{
+						Name:        "some_table_enum",
+						ColumnNames: []string{"foo"},
+						ColumnTypes: []pg.Type{pg.EnumType{Name: "some_table_enum"}},
+					},
+					Name:       "SomeTableEnum",
+					FieldNames: []string{"Foo"},
+					FieldTypes: []gotype.Type{
+						gotype.NewEnumType(
+							emptyPkgPath,
+							pg.EnumType{Name: "device_type", Labels: []string{"ios", "mobile"}},
+							caser,
+						),
+					},
+				}},
 		},
 		{
-			name: "composite_nested",
-			typ: gotype.CompositeType{
-				PgComposite: pg.CompositeType{
-					Name:        "some_table_nested",
-					ColumnNames: []string{"foo", "bar_baz"},
-					ColumnTypes: []pg.Type{
-						pg.CompositeType{
-							Name:        "foo_type",
-							ColumnNames: []string{"alpha"},
-							ColumnTypes: []pg.Type{pg.Text},
+			name:    "composite_nested",
+			pkgPath: "example.com/foo",
+			typ: &gotype.ImportType{
+				PkgPath: "example.com/foo",
+				Type: &gotype.CompositeType{
+					PgComposite: pg.CompositeType{
+						Name:        "some_table_nested",
+						ColumnNames: []string{"foo", "bar_baz"},
+						ColumnTypes: []pg.Type{
+							pg.CompositeType{
+								Name:        "foo_type",
+								ColumnNames: []string{"alpha"},
+								ColumnTypes: []pg.Type{pg.Text},
+							},
+							pg.Text,
 						},
-						pg.Text,
+					},
+					Name:       "SomeTableNested",
+					FieldNames: []string{"Foo", "BarBaz"},
+					FieldTypes: []gotype.Type{
+						&gotype.ImportType{
+							PkgPath: "example.com/foo",
+							Type: &gotype.CompositeType{
+								PgComposite: pg.CompositeType{
+									Name:        "foo_type",
+									ColumnNames: []string{"alpha"},
+									ColumnTypes: []pg.Type{pg.Text},
+								},
+								Name:       "FooType",
+								FieldNames: []string{"Alpha"},
+								FieldTypes: []gotype.Type{gotype.PgText},
+							},
+						},
+						gotype.PgText,
 					},
 				},
-				PkgPath:    "example.com/foo",
-				Pkg:        "foo",
-				Name:       "SomeTableNested",
-				FieldNames: []string{"Foo", "BarBaz"},
-				FieldTypes: []gotype.Type{
-					gotype.CompositeType{
-						PgComposite: pg.CompositeType{
-							Name:        "foo_type",
-							ColumnNames: []string{"alpha"},
-							ColumnTypes: []pg.Type{pg.Text},
-						},
-						PkgPath:    "example.com/foo",
-						Pkg:        "foo",
-						Name:       "FooType",
-						FieldNames: []string{"Alpha"},
-						FieldTypes: []gotype.Type{gotype.PgText},
-					},
-					gotype.PgText,
-				},
 			},
-			pkgPath: "example.com/foo",
 		},
 		{
 			name: "enum_escaping",
@@ -180,7 +178,10 @@ func TestDeclarers(t *testing.T) {
 
 			want, err := os.ReadFile(golden)
 			require.NoError(t, err)
-			assert.Equal(t, string(want), got)
+
+			if diff := cmp.Diff(string(want), got); diff != "" {
+				t.Errorf("mismatch (-want +got):\n%s", diff)
+			}
 		})
 	}
 }

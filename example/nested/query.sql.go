@@ -123,15 +123,15 @@ type Dimensions struct {
 
 // ProductImageSetType represents the Postgres composite type "product_image_set_type".
 type ProductImageSetType struct {
-	Name      string             `json:"name"`
-	OrigImage ProductImageType   `json:"orig_image"`
-	Images    []ProductImageType `json:"images"`
+	Name      string                    `json:"name"`
+	OrigImage nested.ProductImageType   `json:"orig_image"`
+	Images    []nested.ProductImageType `json:"images"`
 }
 
 // ProductImageType represents the Postgres composite type "product_image_type".
 type ProductImageType struct {
-	Source     string     `json:"source"`
-	Dimensions Dimensions `json:"dimensions"`
+	Source     string            `json:"source"`
+	Dimensions nested.Dimensions `json:"dimensions"`
 }
 
 // typeResolver looks up the pgtype.ValueTranscoder by Postgres type name.
@@ -251,12 +251,6 @@ func (tr *typeResolver) newProductImageType() pgtype.ValueTranscoder {
 	)
 }
 
-// newProductImageTypeArray creates a new pgtype.ValueTranscoder for the Postgres
-// '_product_image_type' array type.
-func (tr *typeResolver) newProductImageTypeArray() pgtype.ValueTranscoder {
-	return tr.newArrayValue("_product_image_type", "product_image_type", tr.newProductImageType)
-}
-
 const arrayNested2SQL = `SELECT
   ARRAY [
     ROW ('img2', ROW (22, 22)::dimensions)::product_image_type,
@@ -268,12 +262,8 @@ func (q *DBQuerier) ArrayNested2(ctx context.Context) ([]ProductImageType, error
 	ctx = context.WithValue(ctx, "pggen_query_name", "ArrayNested2")
 	row := q.conn.QueryRow(ctx, arrayNested2SQL)
 	item := []ProductImageType{}
-	imagesArray := q.types.newProductImageTypeArray()
-	if err := row.Scan(imagesArray); err != nil {
+	if err := row.Scan(&item); err != nil {
 		return item, fmt.Errorf("query ArrayNested2: %w", err)
-	}
-	if err := imagesArray.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign ArrayNested2 row: %w", err)
 	}
 	return item, nil
 }
@@ -287,12 +277,8 @@ func (q *DBQuerier) ArrayNested2Batch(batch genericBatch) {
 func (q *DBQuerier) ArrayNested2Scan(results pgx.BatchResults) ([]ProductImageType, error) {
 	row := results.QueryRow()
 	item := []ProductImageType{}
-	imagesArray := q.types.newProductImageTypeArray()
-	if err := row.Scan(imagesArray); err != nil {
+	if err := row.Scan(&item); err != nil {
 		return item, fmt.Errorf("scan ArrayNested2Batch row: %w", err)
-	}
-	if err := imagesArray.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign ArrayNested2 row: %w", err)
 	}
 	return item, nil
 }
@@ -316,14 +302,10 @@ func (q *DBQuerier) Nested3(ctx context.Context) ([]ProductImageSetType, error) 
 	}
 	defer rows.Close()
 	items := []ProductImageSetType{}
-	rowRow := q.types.newProductImageSetType()
 	for rows.Next() {
 		var item ProductImageSetType
 		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan Nested3 row: %w", err)
-		}
-		if err := rowRow.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign Nested3 row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -346,14 +328,10 @@ func (q *DBQuerier) Nested3Scan(results pgx.BatchResults) ([]ProductImageSetType
 	}
 	defer rows.Close()
 	items := []ProductImageSetType{}
-	rowRow := q.types.newProductImageSetType()
 	for rows.Next() {
 		var item ProductImageSetType
 		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan Nested3Batch row: %w", err)
-		}
-		if err := rowRow.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign Nested3 row: %w", err)
 		}
 		items = append(items, item)
 	}

@@ -235,12 +235,6 @@ func (tr *typeResolver) newAlpha() pgtype.ValueTranscoder {
 	)
 }
 
-// newAlphaArray creates a new pgtype.ValueTranscoder for the Postgres
-// '_alpha' array type.
-func (tr *typeResolver) newAlphaArray() pgtype.ValueTranscoder {
-	return tr.newArrayValue("_alpha", "alpha", tr.newAlpha)
-}
-
 const alphaNestedSQL = `SELECT 'alpha_nested' as output;`
 
 // AlphaNested implements Querier.AlphaNested.
@@ -276,12 +270,8 @@ func (q *DBQuerier) AlphaCompositeArray(ctx context.Context) ([]Alpha, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "AlphaCompositeArray")
 	row := q.conn.QueryRow(ctx, alphaCompositeArraySQL)
 	item := []Alpha{}
-	arrayArray := q.types.newAlphaArray()
-	if err := row.Scan(arrayArray); err != nil {
+	if err := row.Scan(&item); err != nil {
 		return item, fmt.Errorf("query AlphaCompositeArray: %w", err)
-	}
-	if err := arrayArray.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign AlphaCompositeArray row: %w", err)
 	}
 	return item, nil
 }
@@ -295,12 +285,8 @@ func (q *DBQuerier) AlphaCompositeArrayBatch(batch genericBatch) {
 func (q *DBQuerier) AlphaCompositeArrayScan(results pgx.BatchResults) ([]Alpha, error) {
 	row := results.QueryRow()
 	item := []Alpha{}
-	arrayArray := q.types.newAlphaArray()
-	if err := row.Scan(arrayArray); err != nil {
+	if err := row.Scan(&item); err != nil {
 		return item, fmt.Errorf("scan AlphaCompositeArrayBatch row: %w", err)
-	}
-	if err := arrayArray.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign AlphaCompositeArray row: %w", err)
 	}
 	return item, nil
 }

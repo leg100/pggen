@@ -229,12 +229,6 @@ func (tr *typeResolver) newBlocks() pgtype.ValueTranscoder {
 	)
 }
 
-// newBlocksArray creates a new pgtype.ValueTranscoder for the Postgres
-// '_blocks' array type.
-func (tr *typeResolver) newBlocksArray() pgtype.ValueTranscoder {
-	return tr.newArrayValue("_blocks", "blocks", tr.newBlocks)
-}
-
 const searchScreenshotsSQL = `SELECT
   ss.id,
   array_agg(bl) AS blocks
@@ -265,14 +259,10 @@ func (q *DBQuerier) SearchScreenshots(ctx context.Context, params SearchScreensh
 	}
 	defer rows.Close()
 	items := []SearchScreenshotsRow{}
-	blocksArray := q.types.newBlocksArray()
 	for rows.Next() {
 		var item SearchScreenshotsRow
-		if err := rows.Scan(&item.ID, blocksArray); err != nil {
+		if err := rows.Scan(&item.ID, &item.Blocks); err != nil {
 			return nil, fmt.Errorf("scan SearchScreenshots row: %w", err)
-		}
-		if err := blocksArray.AssignTo(&item.Blocks); err != nil {
-			return nil, fmt.Errorf("assign SearchScreenshots row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -295,14 +285,10 @@ func (q *DBQuerier) SearchScreenshotsScan(results pgx.BatchResults) ([]SearchScr
 	}
 	defer rows.Close()
 	items := []SearchScreenshotsRow{}
-	blocksArray := q.types.newBlocksArray()
 	for rows.Next() {
 		var item SearchScreenshotsRow
-		if err := rows.Scan(&item.ID, blocksArray); err != nil {
+		if err := rows.Scan(&item.ID, &item.Blocks); err != nil {
 			return nil, fmt.Errorf("scan SearchScreenshotsBatch row: %w", err)
-		}
-		if err := blocksArray.AssignTo(&item.Blocks); err != nil {
-			return nil, fmt.Errorf("assign SearchScreenshots row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -336,14 +322,10 @@ func (q *DBQuerier) SearchScreenshotsOneCol(ctx context.Context, params SearchSc
 	}
 	defer rows.Close()
 	items := [][]Blocks{}
-	blocksArray := q.types.newBlocksArray()
 	for rows.Next() {
 		var item []Blocks
-		if err := rows.Scan(blocksArray); err != nil {
+		if err := rows.Scan(&item); err != nil {
 			return nil, fmt.Errorf("scan SearchScreenshotsOneCol row: %w", err)
-		}
-		if err := blocksArray.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign SearchScreenshotsOneCol row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -366,14 +348,10 @@ func (q *DBQuerier) SearchScreenshotsOneColScan(results pgx.BatchResults) ([][]B
 	}
 	defer rows.Close()
 	items := [][]Blocks{}
-	blocksArray := q.types.newBlocksArray()
 	for rows.Next() {
 		var item []Blocks
-		if err := rows.Scan(blocksArray); err != nil {
+		if err := rows.Scan(&item); err != nil {
 			return nil, fmt.Errorf("scan SearchScreenshotsOneColBatch row: %w", err)
-		}
-		if err := blocksArray.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign SearchScreenshotsOneCol row: %w", err)
 		}
 		items = append(items, item)
 	}

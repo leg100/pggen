@@ -66,6 +66,18 @@ func TestExamples(t *testing.T) {
 			},
 		},
 		{
+			name: "example/slices",
+			args: []string{
+				"--schema-glob", "example/slices/schema.sql",
+				"--query-glob", "example/slices/query.sql",
+				"--go-type", "timestamp=*time.Time",
+				"--go-type", "_timestamptz=[]time.Time",
+				"--go-type", "_timestamp=[]*time.Time",
+				// "--go-type", "_interval=[]util/custom/times.Interval",
+				// "--go-type", "_date=util/custom/[]times.Date",
+			},
+		},
+		{
 			name: "internal/pg",
 			args: []string{
 				"--schema-glob", "example/author/schema.sql", // force docker usage

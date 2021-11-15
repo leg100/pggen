@@ -161,8 +161,8 @@ func PrepareAllQueries(ctx context.Context, p preparer) error {
 
 // Device represents the Postgres composite type "device".
 type Device struct {
-	Mac  pgtype.Macaddr `json:"mac"`
-	Type DeviceType     `json:"type"`
+	Mac  pgtype.Macaddr   `json:"mac"`
+	Type enums.DeviceType `json:"type"`
 }
 
 // newDeviceTypeEnum creates a new pgtype.ValueTranscoder for the
@@ -291,12 +291,6 @@ func (tr *typeResolver) newDevice() pgtype.ValueTranscoder {
 	)
 }
 
-// newDeviceTypeArray creates a new pgtype.ValueTranscoder for the Postgres
-// '_device_type' array type.
-func (tr *typeResolver) newDeviceTypeArray() pgtype.ValueTranscoder {
-	return tr.newArrayValue("_device_type", "device_type", newDeviceTypeEnum)
-}
-
 const findAllDevicesSQL = `SELECT mac, type
 FROM device;`
 
@@ -387,12 +381,8 @@ func (q *DBQuerier) FindOneDeviceArray(ctx context.Context) ([]DeviceType, error
 	ctx = context.WithValue(ctx, "pggen_query_name", "FindOneDeviceArray")
 	row := q.conn.QueryRow(ctx, findOneDeviceArraySQL)
 	item := []DeviceType{}
-	deviceTypesArray := q.types.newDeviceTypeArray()
-	if err := row.Scan(deviceTypesArray); err != nil {
+	if err := row.Scan(&item); err != nil {
 		return item, fmt.Errorf("query FindOneDeviceArray: %w", err)
-	}
-	if err := deviceTypesArray.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign FindOneDeviceArray row: %w", err)
 	}
 	return item, nil
 }
@@ -406,12 +396,8 @@ func (q *DBQuerier) FindOneDeviceArrayBatch(batch genericBatch) {
 func (q *DBQuerier) FindOneDeviceArrayScan(results pgx.BatchResults) ([]DeviceType, error) {
 	row := results.QueryRow()
 	item := []DeviceType{}
-	deviceTypesArray := q.types.newDeviceTypeArray()
-	if err := row.Scan(deviceTypesArray); err != nil {
+	if err := row.Scan(&item); err != nil {
 		return item, fmt.Errorf("scan FindOneDeviceArrayBatch row: %w", err)
-	}
-	if err := deviceTypesArray.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign FindOneDeviceArray row: %w", err)
 	}
 	return item, nil
 }
@@ -429,14 +415,10 @@ func (q *DBQuerier) FindManyDeviceArray(ctx context.Context) ([][]DeviceType, er
 	}
 	defer rows.Close()
 	items := [][]DeviceType{}
-	deviceTypesArray := q.types.newDeviceTypeArray()
 	for rows.Next() {
 		var item []DeviceType
-		if err := rows.Scan(deviceTypesArray); err != nil {
+		if err := rows.Scan(&item); err != nil {
 			return nil, fmt.Errorf("scan FindManyDeviceArray row: %w", err)
-		}
-		if err := deviceTypesArray.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign FindManyDeviceArray row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -459,14 +441,10 @@ func (q *DBQuerier) FindManyDeviceArrayScan(results pgx.BatchResults) ([][]Devic
 	}
 	defer rows.Close()
 	items := [][]DeviceType{}
-	deviceTypesArray := q.types.newDeviceTypeArray()
 	for rows.Next() {
 		var item []DeviceType
-		if err := rows.Scan(deviceTypesArray); err != nil {
+		if err := rows.Scan(&item); err != nil {
 			return nil, fmt.Errorf("scan FindManyDeviceArrayBatch row: %w", err)
-		}
-		if err := deviceTypesArray.AssignTo(&item); err != nil {
-			return nil, fmt.Errorf("assign FindManyDeviceArray row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -494,14 +472,10 @@ func (q *DBQuerier) FindManyDeviceArrayWithNum(ctx context.Context) ([]FindManyD
 	}
 	defer rows.Close()
 	items := []FindManyDeviceArrayWithNumRow{}
-	deviceTypesArray := q.types.newDeviceTypeArray()
 	for rows.Next() {
 		var item FindManyDeviceArrayWithNumRow
-		if err := rows.Scan(&item.Num, deviceTypesArray); err != nil {
+		if err := rows.Scan(&item.Num, &item.DeviceTypes); err != nil {
 			return nil, fmt.Errorf("scan FindManyDeviceArrayWithNum row: %w", err)
-		}
-		if err := deviceTypesArray.AssignTo(&item.DeviceTypes); err != nil {
-			return nil, fmt.Errorf("assign FindManyDeviceArrayWithNum row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -524,14 +498,10 @@ func (q *DBQuerier) FindManyDeviceArrayWithNumScan(results pgx.BatchResults) ([]
 	}
 	defer rows.Close()
 	items := []FindManyDeviceArrayWithNumRow{}
-	deviceTypesArray := q.types.newDeviceTypeArray()
 	for rows.Next() {
 		var item FindManyDeviceArrayWithNumRow
-		if err := rows.Scan(&item.Num, deviceTypesArray); err != nil {
+		if err := rows.Scan(&item.Num, &item.DeviceTypes); err != nil {
 			return nil, fmt.Errorf("scan FindManyDeviceArrayWithNumBatch row: %w", err)
-		}
-		if err := deviceTypesArray.AssignTo(&item.DeviceTypes); err != nil {
-			return nil, fmt.Errorf("assign FindManyDeviceArrayWithNum row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -548,12 +518,8 @@ func (q *DBQuerier) EnumInsideComposite(ctx context.Context) (Device, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "EnumInsideComposite")
 	row := q.conn.QueryRow(ctx, enumInsideCompositeSQL)
 	var item Device
-	rowRow := q.types.newDevice()
 	if err := row.Scan(rowRow); err != nil {
 		return item, fmt.Errorf("query EnumInsideComposite: %w", err)
-	}
-	if err := rowRow.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign EnumInsideComposite row: %w", err)
 	}
 	return item, nil
 }
@@ -567,12 +533,8 @@ func (q *DBQuerier) EnumInsideCompositeBatch(batch genericBatch) {
 func (q *DBQuerier) EnumInsideCompositeScan(results pgx.BatchResults) (Device, error) {
 	row := results.QueryRow()
 	var item Device
-	rowRow := q.types.newDevice()
 	if err := row.Scan(rowRow); err != nil {
 		return item, fmt.Errorf("scan EnumInsideCompositeBatch row: %w", err)
-	}
-	if err := rowRow.AssignTo(&item); err != nil {
-		return item, fmt.Errorf("assign EnumInsideComposite row: %w", err)
 	}
 	return item, nil
 }

@@ -65,7 +65,7 @@ type (
 		// begin with an underscore. From pg_type.typname.
 		Name string
 		// pg_type.typelem: the element type of the array
-		ElemType Type
+		Elem Type
 	}
 
 	EnumType struct {

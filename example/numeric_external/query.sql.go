@@ -224,22 +224,6 @@ func (tr *typeResolver) newNumericExternalTypeRaw(v NumericExternalType) []inter
 	}
 }
 
-// newNumericExternalTypeArray creates a new pgtype.ValueTranscoder for the Postgres
-// '_numeric_external_type' array type.
-func (tr *typeResolver) newNumericExternalTypeArray() pgtype.ValueTranscoder {
-	return tr.newArrayValue("_numeric_external_type", "numeric_external_type", tr.newNumericExternalType)
-}
-
-// newNumericExternalTypeArrayInit creates an initialized pgtype.ValueTranscoder for the
-// Postgres array type '_numeric_external_type' to encode query parameters.
-func (tr *typeResolver) newNumericExternalTypeArrayInit(ps []NumericExternalType) pgtype.ValueTranscoder {
-	dec := tr.newNumericExternalTypeArray()
-	if err := dec.Set(tr.newNumericExternalTypeArrayRaw(ps)); err != nil {
-		panic("encode []NumericExternalType: " + err.Error()) // should always succeed
-	}
-	return textPreferrer{ValueTranscoder: dec, typeName: "_numeric_external_type"}
-}
-
 // newNumericExternalTypeArrayRaw returns all elements for the Postgres array type '_numeric_external_type'
 // as a slice of interface{} for use with the pgtype.Value Set method.
 func (tr *typeResolver) newNumericExternalTypeArrayRaw(vs []NumericExternalType) []interface{} {
@@ -294,14 +278,10 @@ func (q *DBQuerier) FindNumerics(ctx context.Context) ([]FindNumericsRow, error)
 	}
 	defer rows.Close()
 	items := []FindNumericsRow{}
-	numArrArray := q.types.newNumericExternalTypeArray()
 	for rows.Next() {
 		var item FindNumericsRow
-		if err := rows.Scan(&item.Num, numArrArray); err != nil {
+		if err := rows.Scan(&item.Num, &item.NumArr); err != nil {
 			return nil, fmt.Errorf("scan FindNumerics row: %w", err)
-		}
-		if err := numArrArray.AssignTo(&item.NumArr); err != nil {
-			return nil, fmt.Errorf("assign FindNumerics row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -324,14 +304,10 @@ func (q *DBQuerier) FindNumericsScan(results pgx.BatchResults) ([]FindNumericsRo
 	}
 	defer rows.Close()
 	items := []FindNumericsRow{}
-	numArrArray := q.types.newNumericExternalTypeArray()
 	for rows.Next() {
 		var item FindNumericsRow
-		if err := rows.Scan(&item.Num, numArrArray); err != nil {
+		if err := rows.Scan(&item.Num, &item.NumArr); err != nil {
 			return nil, fmt.Errorf("scan FindNumericsBatch row: %w", err)
-		}
-		if err := numArrArray.AssignTo(&item.NumArr); err != nil {
-			return nil, fmt.Errorf("assign FindNumerics row: %w", err)
 		}
 		items = append(items, item)
 	}
