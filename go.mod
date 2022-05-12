@@ -1,4 +1,4 @@
-module github.com/jschaf/pggen
+module github.com/leg100/pggen
 
 go 1.16
 
