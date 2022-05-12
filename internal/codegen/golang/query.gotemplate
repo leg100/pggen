@@ -125,6 +125,7 @@ func PrepareAllQueries(ctx context.Context, p preparer) error {
 const {{ $q.SQLVarName }} = {{ $q.EmitPreparedSQL }}
 {{- $q.EmitParamStruct -}}
 {{- $q.EmitRowStruct -}}
+{{- $q.EmitRowStructGetters -}}
 {{- "\n\n" -}}
 // {{ $q.Name }} implements Querier.{{ $q.Name }}.
 func (q *DBQuerier) {{ $q.Name }}(ctx context.Context {{- $q.EmitParams }}) ({{ $q.EmitResultType }}, error) {

@@ -1,10 +1,11 @@
 package golang
 
 import (
-	"github.com/jschaf/pggen/internal/codegen/golang/gotype"
-	"github.com/jschaf/pggen/internal/pg"
 	"strconv"
 	"strings"
+
+	"github.com/jschaf/pggen/internal/codegen/golang/gotype"
+	"github.com/jschaf/pggen/internal/pg"
 )
 
 // NameCompositeTranscoderFunc returns the function name that creates a
@@ -81,6 +82,27 @@ func (c CompositeTypeDeclarer) Declare(pkgPath string) (string, error) {
 		sb.WriteRune('\n')
 	}
 	sb.WriteString("}")
+
+	if len(c.comp.FieldNames) > 0 {
+		sb.WriteString("\n\n")
+	}
+
+	for i, name := range c.comp.FieldNames {
+		// Method Signature
+		sb.WriteString("func (s ")
+		sb.WriteString(c.comp.Name)
+		sb.WriteString(") Get")
+		sb.WriteString(name)
+		sb.WriteString("() ")
+		qualType := c.comp.FieldTypes[i].QualifyRel(pkgPath)
+		sb.WriteString(qualType)
+		// Body
+		sb.WriteString(" { return s.")
+		sb.WriteString(name)
+		sb.WriteString(" }")
+		sb.WriteRune('\n')
+	}
+
 	return sb.String(), nil
 }
 

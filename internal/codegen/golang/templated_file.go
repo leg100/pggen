@@ -2,10 +2,11 @@ package golang
 
 import (
 	"fmt"
-	"github.com/jschaf/pggen/internal/ast"
-	"github.com/jschaf/pggen/internal/codegen/golang/gotype"
 	"strconv"
 	"strings"
+
+	"github.com/jschaf/pggen/internal/ast"
+	"github.com/jschaf/pggen/internal/codegen/golang/gotype"
 )
 
 // TemplatedPackage is all templated files in a pggen invocation. The templated
@@ -454,6 +455,39 @@ func (tq TemplatedQuery) EmitRowStruct() string {
 			sb.WriteRune('\n')
 		}
 		sb.WriteString("}")
+		return sb.String()
+	default:
+		panic("unhandled result type: " + tq.ResultKind)
+	}
+}
+
+// EmitRowStructGetters writes getter methods for each field of the struct for
+// query output row.
+func (tq TemplatedQuery) EmitRowStructGetters() string {
+	switch tq.ResultKind {
+	case ast.ResultKindExec:
+		return ""
+	case ast.ResultKindOne, ast.ResultKindMany:
+		outs := removeVoidColumns(tq.Outputs)
+		if len(outs) <= 1 {
+			return "" // if there's only 1 output column, there's no struct
+		}
+		sb := &strings.Builder{}
+		sb.WriteString("\n\n")
+		for _, out := range outs {
+			// Method Signature
+			sb.WriteString("func (s ")
+			sb.WriteString(tq.Name)
+			sb.WriteString("Row) Get")
+			sb.WriteString(out.UpperName)
+			sb.WriteString("() ")
+			sb.WriteString(out.QualType)
+			// Body
+			sb.WriteString(" { return s.")
+			sb.WriteString(out.UpperName)
+			sb.WriteString(" }")
+			sb.WriteRune('\n')
+		}
 		return sb.String()
 	default:
 		panic("unhandled result type: " + tq.ResultKind)
