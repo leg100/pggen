@@ -2,12 +2,13 @@ package gotype
 
 import (
 	"bytes"
-	"github.com/jschaf/pggen/internal/casing"
-	"github.com/jschaf/pggen/internal/pg"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/jschaf/pggen/internal/casing"
+	"github.com/jschaf/pggen/internal/pg"
 )
 
 // Type is a Go type.
@@ -120,24 +121,25 @@ func qualifyRel(typ Type, otherPkgPath string) string {
 		return typ.BaseName()
 	}
 	sb := strings.Builder{}
-	sb.Grow(len(typ.BaseName()))
+	bn := []byte(typ.BaseName())
+	sb.Grow(len(bn))
 	if typ.Import() != "" {
 		shortPkg := typ.Package()
 		sb.Grow(len(shortPkg) + 1)
-		isPtr := typ.BaseName()[0] == '*'
+		isArr := bn[0] == '[' && bn[1] == ']'
+		if isArr {
+			bn = bn[2:]
+			sb.WriteString("[]")
+		}
+		isPtr := bn[0] == '*'
 		if isPtr {
+			bn = bn[1:]
 			sb.WriteRune('*')
 		}
 		sb.WriteString(shortPkg)
 		sb.WriteRune('.')
-		if isPtr {
-			sb.WriteString(typ.BaseName()[1:])
-		} else {
-			sb.WriteString(typ.BaseName())
-		}
-	} else {
-		sb.WriteString(typ.BaseName())
 	}
+	sb.Write(bn)
 
 	return sb.String()
 }

@@ -209,14 +209,39 @@ func TestType_QualifyRel(t *testing.T) {
 			want:         "Baz",
 		},
 		{
+			typ:          gotype.NewOpaqueType("*example.com/bar.Baz"),
+			otherPkgPath: "example.com/bar",
+			want:         "*Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("[]example.com/bar.Baz"),
+			otherPkgPath: "example.com/bar",
+			want:         "[]Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("[]*example.com/bar.Baz"),
+			otherPkgPath: "example.com/bar",
+			want:         "[]*Baz",
+		},
+		{
 			typ:          gotype.NewOpaqueType("example.com/bar.Baz"),
 			otherPkgPath: "",
 			want:         "bar.Baz",
 		},
 		{
+			typ:          gotype.NewOpaqueType("[]example.com/bar.Baz"),
+			otherPkgPath: "",
+			want:         "[]bar.Baz",
+		},
+		{
 			typ:          gotype.NewOpaqueType("*example.com/bar.Baz"),
 			otherPkgPath: "",
 			want:         "*bar.Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("[]*example.com/bar.Baz"),
+			otherPkgPath: "",
+			want:         "[]*bar.Baz",
 		},
 		{
 			typ:          gotype.NewOpaqueType("string"),
