@@ -124,10 +124,21 @@ func qualifyRel(typ Type, otherPkgPath string) string {
 	if typ.Import() != "" {
 		shortPkg := typ.Package()
 		sb.Grow(len(shortPkg) + 1)
+		isPtr := typ.BaseName()[0] == '*'
+		if isPtr {
+			sb.WriteRune('*')
+		}
 		sb.WriteString(shortPkg)
 		sb.WriteRune('.')
+		if isPtr {
+			sb.WriteString(typ.BaseName()[1:])
+		} else {
+			sb.WriteString(typ.BaseName())
+		}
+	} else {
+		sb.WriteString(typ.BaseName())
 	}
-	sb.WriteString(typ.BaseName())
+
 	return sb.String()
 }
 
