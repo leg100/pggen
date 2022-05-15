@@ -1,12 +1,13 @@
 package golang
 
 import (
+	"testing"
+
 	"github.com/jackc/pgtype"
 	"github.com/jschaf/pggen/internal/casing"
 	"github.com/jschaf/pggen/internal/codegen/golang/gotype"
 	"github.com/jschaf/pggen/internal/pg"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestTypeResolver_Resolve(t *testing.T) {
@@ -206,6 +207,41 @@ func TestType_QualifyRel(t *testing.T) {
 			typ:          gotype.NewOpaqueType("example.com/bar.Baz"),
 			otherPkgPath: "example.com/bar",
 			want:         "Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("*example.com/bar.Baz"),
+			otherPkgPath: "example.com/bar",
+			want:         "*Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("[]example.com/bar.Baz"),
+			otherPkgPath: "example.com/bar",
+			want:         "[]Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("[]*example.com/bar.Baz"),
+			otherPkgPath: "example.com/bar",
+			want:         "[]*Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("example.com/bar.Baz"),
+			otherPkgPath: "",
+			want:         "bar.Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("[]example.com/bar.Baz"),
+			otherPkgPath: "",
+			want:         "[]bar.Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("*example.com/bar.Baz"),
+			otherPkgPath: "",
+			want:         "*bar.Baz",
+		},
+		{
+			typ:          gotype.NewOpaqueType("[]*example.com/bar.Baz"),
+			otherPkgPath: "",
+			want:         "[]*bar.Baz",
 		},
 		{
 			typ:          gotype.NewOpaqueType("string"),
