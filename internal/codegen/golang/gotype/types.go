@@ -2,12 +2,13 @@ package gotype
 
 import (
 	"bytes"
-	"github.com/jschaf/pggen/internal/casing"
-	"github.com/jschaf/pggen/internal/pg"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/jschaf/pggen/internal/casing"
+	"github.com/jschaf/pggen/internal/pg"
 )
 
 // Type is a Go type.
@@ -104,7 +105,7 @@ func (o OpaqueType) Package() string                  { return o.Pkg }
 func (o OpaqueType) BaseName() string                 { return o.Name }
 func (o OpaqueType) PgType() pg.Type                  { return o.PgTyp }
 
-func (c CompositeType) QualifyRel(pkgPath string) string { return qualifyRel(c, pkgPath) }
+func (c CompositeType) QualifyRel(pkgPath string) string { return "*" + qualifyRel(c, pkgPath) }
 func (c CompositeType) Import() string                   { return c.PkgPath }
 func (c CompositeType) Package() string                  { return c.Pkg }
 func (c CompositeType) BaseName() string                 { return c.Name }
