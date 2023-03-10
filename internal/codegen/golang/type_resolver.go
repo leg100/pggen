@@ -2,9 +2,9 @@ package golang
 
 import (
 	"fmt"
-	"github.com/jschaf/pggen/internal/casing"
-	"github.com/jschaf/pggen/internal/codegen/golang/gotype"
-	"github.com/jschaf/pggen/internal/pg"
+	"github.com/leg100/pggen/internal/casing"
+	"github.com/leg100/pggen/internal/codegen/golang/gotype"
+	"github.com/leg100/pggen/internal/pg"
 	"strconv"
 	"strings"
 )

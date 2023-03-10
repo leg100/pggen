@@ -3,13 +3,14 @@ package pg
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgtype"
-	"github.com/jackc/pgx/v4"
-	"github.com/jschaf/pggen/internal/texts"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v4"
+	"github.com/leg100/pggen/internal/texts"
 )
 
 // Column stores information about a column in a TableOID.

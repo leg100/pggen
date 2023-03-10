@@ -2,10 +2,11 @@ package pg
 
 import (
 	"github.com/jackc/pgtype"
-	"github.com/jschaf/pggen/internal/pg/pgoid"
+	"github.com/leg100/pggen/internal/pg/pgoid"
 )
 
 // If you add to this list, also add to defaultKnownTypes below.
+//
 //goland:noinspection GoUnusedGlobalVariable,GoNameStartsWithPackageName
 var (
 	Bool             = BaseType{ID: pgtype.BoolOID, Name: "bool"}

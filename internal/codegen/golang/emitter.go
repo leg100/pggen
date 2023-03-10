@@ -2,7 +2,7 @@ package golang
 
 import (
 	"fmt"
-	"github.com/jschaf/pggen/internal/errs"
+	"github.com/leg100/pggen/internal/errs"
 	"os"
 	"path/filepath"
 	"strconv"

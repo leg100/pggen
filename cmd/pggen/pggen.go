@@ -4,16 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/bmatcuk/doublestar"
-	"github.com/jschaf/pggen"
-	"github.com/jschaf/pggen/internal/flags"
-	"github.com/jschaf/pggen/internal/texts"
-	"github.com/peterbourgon/ff/v3/ffcli"
-	"go.uber.org/zap"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/bmatcuk/doublestar"
+	"github.com/leg100/pggen"
+	"github.com/leg100/pggen/internal/flags"
+	"github.com/leg100/pggen/internal/texts"
+	"github.com/peterbourgon/ff/v3/ffcli"
+	"go.uber.org/zap"
 )
 
 // Set via ldflags for release binaries.

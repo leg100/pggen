@@ -10,9 +10,9 @@ import (
 	"github.com/jackc/pgproto3/v2"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
-	"github.com/jschaf/pggen/internal/ast"
-	"github.com/jschaf/pggen/internal/errs"
-	"github.com/jschaf/pggen/internal/pg"
+	"github.com/leg100/pggen/internal/ast"
+	"github.com/leg100/pggen/internal/errs"
+	"github.com/leg100/pggen/internal/pg"
 )
 
 const defaultTimeout = 3 * time.Second

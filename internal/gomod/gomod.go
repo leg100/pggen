@@ -4,7 +4,7 @@ package gomod
 
 import (
 	"fmt"
-	"github.com/jschaf/pggen/internal/paths"
+	"github.com/leg100/pggen/internal/paths"
 	"golang.org/x/mod/modfile"
 	"io/ioutil"
 	"os"
